@@ -97,7 +97,9 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 			if _, err := rw.Write(bb); err != nil {
 				log("ERROR write response: %v", err)
 			}
-			log("DEBUG get %s", fname)
+			if DEBUG {
+				log("DEBUG get %s", fname)
+			}
 		}
 
 	} else if req.Method == http.MethodPut {
@@ -130,7 +132,9 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 				return
 			}
 			rw.WriteHeader(http.StatusOK)
-			log("DEBUG put %s: %d bytes", fname, req.ContentLength)
+			if DEBUG {
+				log("DEBUG put %s: %d bytes", fname, req.ContentLength)
+			}
 		}
 
 	} else {
