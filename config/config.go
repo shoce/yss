@@ -15,7 +15,7 @@ const NL = "\n"
 
 type YssConfig struct {
 	YssUrl string `yaml:"-"`
-	DEBUG  bool   `yaml:"DEBUG"`
+	DEBUG  bool   `yaml:"-"`
 }
 
 func (config *YssConfig) Get() error {
