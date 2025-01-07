@@ -1,13 +1,17 @@
-package main
+package config
 
 import (
 	"bytes"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"time"
 
 	yaml "gopkg.in/yaml.v3"
 )
+
+const NL = "\n"
 
 type YssConfig struct {
 	YssUrl string `yaml:"-"`
@@ -83,4 +87,13 @@ func (config *YssConfig) Put() error {
 	}
 
 	return nil
+}
+
+func log(msg string, args ...interface{}) {
+	t := time.Now().Local()
+	ts := fmt.Sprintf(
+		"%03d%02d%02d:"+"%02d%02d",
+		t.Year()%1000, t.Month(), t.Day(), t.Hour(), t.Minute(),
+	)
+	fmt.Fprintf(os.Stderr, ts+" "+msg+NL, args...)
 }
