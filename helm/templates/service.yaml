@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yss
+  labels:
+    app: yss
+spec:
+  selector:
+    app: yss
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+    - port: {{ $.Values.ListenPort }}
+

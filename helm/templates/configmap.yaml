@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yss
+  labels:
+    app: yss
+
+data:
+
+  DEBUG: "{{ $.Values.DEBUG }}"
+
+  ListenAddr: "{{ $.Values.ListenHost }}:{{ $.Values.ListenPort }}"
+
+  DataDir: "{{ $.Values.DataDir }}"
+
+

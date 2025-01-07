@@ -1,0 +1,18 @@
+---
+
+ImageNameGithubYss: "ghcr.io/shoce/yss/main"
+ImageTagGithubYss: ""
+
+
+DEBUG: ""
+
+ListenHost: ""
+ListenPort: 80
+
+DataDir: /yss/
+
+
+IngressHost: ""
+IngressRequestMaxBodySizeString: "1m"
+IngressWhitelistSourceRange: []
+

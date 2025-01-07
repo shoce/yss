@@ -1,0 +1,29 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: yss
+  annotations:
+    kubernetes.io/ingress.allow-http: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "{{ $.Values.IngressRequestMaxBodySizeString }}"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "{{ $.Values.IngressWhitelistSourceRange | join ", " }}"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - {{ $.Values.IngressHost }}
+  rules:
+  - host: {{ $.Values.IngressHost }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: yss
+            port:
+              number: {{ $.Values.ListenPort }}
+
+
