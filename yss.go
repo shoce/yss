@@ -147,7 +147,7 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 func log(msg string, args ...interface{}) {
 	t := time.Now().Local()
 	ts := fmt.Sprintf(
-		"%d:%d%02d:%d%02d",
+		"%03d%02d%02d:"+"%02d%02d",
 		t.Year()%1000, t.Month(), t.Day(), t.Hour(), t.Minute(),
 	)
 	fmt.Fprintf(os.Stderr, ts+" "+msg+NL, args...)
