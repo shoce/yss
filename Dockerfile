@@ -2,7 +2,7 @@
 # https://hub.docker.com/_/golang/tags
 FROM golang:1.23.4-alpine3.20 AS build
 RUN mkdir -p /root/yss/
-COPY *.go go.mod /root/yss/
+COPY *.go go.mod go.sum /root/yss/
 WORKDIR /root/yss/
 RUN go version
 RUN go get -v
