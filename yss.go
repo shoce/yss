@@ -43,12 +43,6 @@ func init() {
 }
 
 func main() {
-	/*
-		if err := os.MkdirAll(DataDir, 0755); err != nil {
-			log("ERROR mkdir %s: %v", DataDir, err)
-			os.Exit(1)
-		}
-	*/
 
 	http.HandleFunc("/", yss)
 
@@ -68,20 +62,19 @@ func main() {
 	for {
 		time.Sleep(11 * time.Second)
 	}
+
 }
 
 func yss(rw http.ResponseWriter, req *http.Request) {
 	fname := req.URL.Path
-	fname = strings.TrimLeft(fname, "/")
-	fname = strings.TrimRight(fname, "/")
+	fname = strings.Trim(fname, "/")
 	if fname == "" {
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if !NameRe.MatchString(fname) {
-		log("name `%s` does not match allowed regexp", fname)
+		log("name `%s` does not match the allowed regexp", fname)
 		rw.WriteHeader(http.StatusBadRequest)
-		//rw.Write([]byte("path must start with [a-z] and contain [-a-z0-9] chars only."))
 		return
 	}
 
@@ -110,21 +103,24 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		if finfo, err := os.Stat(path.Join(DataDir, fname)); err != nil {
+			log("ERROR stat file %s: %v", fname, err)
+			if os.IsNotExist(err) {
+				rw.WriteHeader(http.StatusNotFound)
+			} else {
+				rw.WriteHeader(http.StatusInternalServerError)
+			}
+			return
+		} else if !finfo.Mode().IsRegular() {
+			log("ERROR file %s is not a regular file", fname)
+			rw.WriteHeader(http.StatusInternalServerError)
+		}
+
 		if bb, err := ioutil.ReadAll(req.Body); err != nil {
 			log("ERROR read request body: %v", err)
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
 		} else {
-			/*
-				if strings.Contains(fname, "/") {
-					fdir := path.Join(DataDir, path.Dir(fname))
-					if err := os.MkdirAll(fdir, 0755); err != nil {
-						log("ERROR mkdir %s: %v", fdir, err)
-						rw.WriteHeader(http.StatusInternalServerError)
-						return
-					}
-				}
-			*/
 
 			if err := os.WriteFile(path.Join(DataDir, fname), bb, 0644); err != nil {
 				log("ERROR write file %s: %v", fname, err)
@@ -135,12 +131,12 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 			if DEBUG {
 				log("DEBUG put %s: %d bytes", fname, req.ContentLength)
 			}
+
 		}
 
 	} else {
 
 		rw.WriteHeader(http.StatusBadRequest)
-		//rw.Write([]byte("get or put methods only."))
 		return
 
 	}
