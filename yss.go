@@ -15,6 +15,8 @@ const (
 	NL = "\n"
 
 	NameReString = "^[a-z][-a-z0-9]*$"
+
+	ContentLengthLimit = 108 * 1024
 )
 
 var (
@@ -97,7 +99,7 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 
 	} else if req.Method == http.MethodPut {
 
-		if req.ContentLength > 12123 {
+		if req.ContentLength > ContentLengthLimit {
 			log("WARNING request content length %d too big", req.ContentLength)
 			rw.WriteHeader(http.StatusBadRequest)
 			return
