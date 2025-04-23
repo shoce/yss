@@ -147,10 +147,11 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 }
 
 func log(msg string, args ...interface{}) {
-	t := time.Now().Local()
+	tnow := time.Now().In(time.FixedZone("IST", 330*60))
 	ts := fmt.Sprintf(
-		"%03d%02d%02d:"+"%02d%02d",
-		t.Year()%1000, t.Month(), t.Day(), t.Hour(), t.Minute(),
+		"%d%02d%02d:%02d%02d",
+		tnow.Year()%1000, tnow.Month(), tnow.Day(),
+		tnow.Hour(), tnow.Minute(),
 	)
 	fmt.Fprintf(os.Stderr, ts+" "+msg+NL, args...)
 }
