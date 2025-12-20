@@ -1,3 +1,5 @@
+// GoGet GoFmt GoBuildNull
+
 package main
 
 import (
@@ -12,6 +14,7 @@ import (
 )
 
 const (
+	SP = " "
 	NL = "\n"
 
 	NameReString = "^[a-z][-a-z0-9]*$"
@@ -50,13 +53,13 @@ func main() {
 
 	go func() {
 		for {
-			log("http: serving requests on %s.", ListenAddr)
+			perr("serving http requests on %s", ListenAddr)
 			err := http.ListenAndServe(ListenAddr, nil)
 			if err != nil {
-				log("ERROR http: listen: %+v", err)
+				perr("ERROR http listen %+v", err)
 			}
 			retryinterval := 3 * time.Second
-			log("http: retrying listen in %s.", retryinterval)
+			perr("retrying http listen in %s", retryinterval.Truncate(time.Second))
 			time.Sleep(retryinterval)
 		}
 	}()
@@ -75,7 +78,7 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if !NameRe.MatchString(fname) {
-		log("name `%s` does not match the allowed regexp", fname)
+		perr("name [%s] does not match the allowed regexp", fname)
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -83,30 +86,30 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodGet {
 
 		if bb, err := ioutil.ReadFile(path.Join(DataDir, fname)); err != nil {
-			log("ERROR read file %s: %v", fname, err)
+			perr("ERROR read file [%s] %v", fname, err)
 			rw.WriteHeader(http.StatusNotFound)
 			return
 		} else {
+			if DEBUG {
+				perr("DEBUG get [%s]", fname)
+			}
 			//rw.Header().Set("Content-Type", "application/x-yaml")
 			rw.WriteHeader(http.StatusOK)
 			if _, err := rw.Write(bb); err != nil {
-				log("ERROR write response: %v", err)
-			}
-			if DEBUG {
-				log("DEBUG get %s", fname)
+				perr("ERROR write response %v", err)
 			}
 		}
 
 	} else if req.Method == http.MethodPut {
 
 		if req.ContentLength > ContentLengthLimit {
-			log("WARNING request content length %d too big", req.ContentLength)
+			perr("WARNING request content length <%d> is more than allowed <%d>", req.ContentLength, ContentLengthLimit)
 			rw.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		if finfo, err := os.Stat(path.Join(DataDir, fname)); err != nil {
-			log("ERROR stat file %s: %v", fname, err)
+			perr("ERROR stat file [%s] %v", fname, err)
 			if os.IsNotExist(err) {
 				rw.WriteHeader(http.StatusNotFound)
 			} else {
@@ -114,25 +117,26 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 			}
 			return
 		} else if !finfo.Mode().IsRegular() {
-			log("ERROR file %s is not a regular file", fname)
+			perr("ERROR file [%s] is not a regular file", fname)
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
 
 		if bb, err := ioutil.ReadAll(req.Body); err != nil {
-			log("ERROR read request body: %v", err)
+			perr("ERROR read request body %v", err)
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
 		} else {
 
+			if DEBUG {
+				perr("DEBUG put [%s] <%d> bytes", fname, req.ContentLength)
+			}
+
 			if err := os.WriteFile(path.Join(DataDir, fname), bb, 0644); err != nil {
-				log("ERROR write file %s: %v", fname, err)
+				perr("ERROR write file [%s] %v", fname, err)
 				rw.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 			rw.WriteHeader(http.StatusOK)
-			if DEBUG {
-				log("DEBUG put %s: %d bytes", fname, req.ContentLength)
-			}
 
 		}
 
@@ -146,12 +150,12 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 	return
 }
 
-func log(msg string, args ...interface{}) {
+func perr(msg string, args ...interface{}) {
 	tnow := time.Now().In(time.FixedZone("IST", 330*60))
 	ts := fmt.Sprintf(
-		"%d%02d%02d:%02d%02d",
+		"%d%02d%02d:%02d%02dॐ",
 		tnow.Year()%1000, tnow.Month(), tnow.Day(),
 		tnow.Hour(), tnow.Minute(),
 	)
-	fmt.Fprintf(os.Stderr, ts+" "+msg+NL, args...)
+	fmt.Fprintf(os.Stderr, ts+SP+msg+NL, args...)
 }
