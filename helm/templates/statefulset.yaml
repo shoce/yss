@@ -1,41 +1,43 @@
 ---
-apiVersion: apps/v1
-kind: StatefulSet
+
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+
 metadata:
-  name: yss
+  name: "yss"
   labels:
-    app: yss
+    app: "yss"
 
 spec:
 
   selector:
     matchLabels:
-      app: yss
+      app: "yss"
 
   template:
     metadata:
-      name: yss
+      name: "yss"
       labels:
-        app: yss
+        app: "yss"
       annotations:
-        checksum/configmap: {{ include ( print $.Template.BasePath "/" "configmap.yaml" ) . | sha256sum }}
+        checksum/configmap: "{{ include ( print $.Template.BasePath "/" "configmap.yaml" ) . | sha256sum }}"
 
     spec:
 
       volumes:
-        - name: data-dir
+        - name: "data-dir"
           hostPath:
             path: "{{ $.Values.DataDir }}"
-            type: DirectoryOrCreate
+            type: "DirectoryOrCreate"
 
       containers:
 
-        - name: yss
+        - name: "yss"
           image: "{{ $.Values.ImageNameGithubYss }}:{{ $.Values.ImageTagGithubYss }}"
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: "IfNotPresent"
 
           volumeMounts:
-            - name: data-dir
+            - name: "data-dir"
               mountPath: "{{ $.Values.DataDir }}"
 
           ports:
@@ -43,6 +45,6 @@ spec:
 
           envFrom:
             - configMapRef:
-                name: yss
+                name: "yss"
 
 

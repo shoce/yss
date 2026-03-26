@@ -1,15 +1,20 @@
 ---
-apiVersion: v1
-kind: Service
+
+apiVersion: "v1"
+kind: "Service"
+
 metadata:
-  name: yss
+  name: "yss"
   labels:
-    app: yss
+    app: "yss"
+
 spec:
+
   selector:
-    app: yss
-  type: NodePort
-  externalTrafficPolicy: Local
+    app: "yss"
+  # NodePort is needed to see the real client ip address
+  type: "NodePort"
+  externalTrafficPolicy: "Local"
   ports:
     - port: {{ $.Values.ListenPort }}
 

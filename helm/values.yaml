@@ -9,10 +9,10 @@ DEBUG: ""
 ListenHost: ""
 ListenPort: 80
 
-DataDir: /yss/
+DataDir: "/yss/"
+
 
 IngressHost: ""
-
 
 IngressRequestMaxBodySizeString: "1m"
 IngressWhitelistSourceRange: []

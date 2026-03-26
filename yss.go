@@ -1,3 +1,7 @@
+/*
+Yaml Storage System
+*/
+
 // GoGet GoFmt GoBuildNull
 
 package main
@@ -20,15 +24,20 @@ const (
 	NameReString = "^[a-z][-a-z0-9]*$"
 
 	ContentLengthLimit = 108 * 1024
+
+	ListenAddrDef = ":80"
+	DataDirDef    = "/yss/"
 )
 
 var (
 	DEBUG bool
 
-	ListenAddr string = ":80"
-	DataDir    string = "/yss/"
+	ListenAddr string = ListenAddrDef
+	DataDir    string = DataDirDef
 
 	NameRe *regexp.Regexp
+
+	TZIST = time.FixedZone("IST", 330*60)
 )
 
 func init() {
@@ -53,13 +62,13 @@ func main() {
 
 	go func() {
 		for {
-			perr("serving http requests on %s", ListenAddr)
+			perr("serving http requests on [%s]", ListenAddr)
 			err := http.ListenAndServe(ListenAddr, nil)
 			if err != nil {
 				perr("ERROR http listen %+v", err)
 			}
 			retryinterval := 3 * time.Second
-			perr("retrying http listen in %s", retryinterval.Truncate(time.Second))
+			perr("retrying http listen in <%s>", retryinterval.Truncate(time.Second))
 			time.Sleep(retryinterval)
 		}
 	}()
@@ -83,16 +92,15 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if req.Method == http.MethodGet {
+	switch req.Method {
+	case http.MethodGet:
 
 		if bb, err := ioutil.ReadFile(path.Join(DataDir, fname)); err != nil {
 			perr("ERROR read file [%s] %v", fname, err)
 			rw.WriteHeader(http.StatusNotFound)
 			return
 		} else {
-			if DEBUG {
-				perr("DEBUG get [%s]", fname)
-			}
+			perr("DEBUG get [%s]", fname)
 			//rw.Header().Set("Content-Type", "application/x-yaml")
 			rw.WriteHeader(http.StatusOK)
 			if _, err := rw.Write(bb); err != nil {
@@ -100,7 +108,7 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-	} else if req.Method == http.MethodPut {
+	case http.MethodPut:
 
 		if req.ContentLength > ContentLengthLimit {
 			perr("WARNING request content length <%d> is more than allowed <%d>", req.ContentLength, ContentLengthLimit)
@@ -127,9 +135,7 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 			return
 		} else {
 
-			if DEBUG {
-				perr("DEBUG put [%s] <%d> bytes", fname, req.ContentLength)
-			}
+			perr("DEBUG put [%s] <%d> bytes", fname, req.ContentLength)
 
 			if err := os.WriteFile(path.Join(DataDir, fname), bb, 0644); err != nil {
 				perr("ERROR write file [%s] %v", fname, err)
@@ -140,7 +146,7 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 
 		}
 
-	} else {
+	default:
 
 		rw.WriteHeader(http.StatusBadRequest)
 		return
@@ -151,11 +157,18 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 }
 
 func perr(msg string, args ...interface{}) {
-	tnow := time.Now().In(time.FixedZone("IST", 330*60))
+	if strings.HasSuffix(msg, "DEBUG ") && !DEBUG {
+		return
+	}
+	tnow := time.Now().In(TZIST)
 	ts := fmt.Sprintf(
-		"%d%02d%02d:%02d%02dॐ",
+		"<%d:%02d%02d:%02d%02dॐ>",
 		tnow.Year()%1000, tnow.Month(), tnow.Day(),
 		tnow.Hour(), tnow.Minute(),
 	)
-	fmt.Fprintf(os.Stderr, ts+SP+msg+NL, args...)
+	msgtext := msg
+	if len(args) > 0 {
+		msgtext = fmt.Sprintf(msg, args...)
+	}
+	fmt.Fprint(os.Stderr, ts+SP+msgtext+NL)
 }
