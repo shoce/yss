@@ -12,9 +12,13 @@ spec:
 
   selector:
     app: "yss"
+  {{ if $.Values.IngressHost -}}
   # NodePort is needed to see the real client ip address
   type: "NodePort"
   externalTrafficPolicy: "Local"
+  {{ else -}}
+  type: "ClusterIP"
+  {{- end }}
   ports:
     - port: {{ $.Values.ListenPort }}
 
