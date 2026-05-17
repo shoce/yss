@@ -137,8 +137,14 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 
 			perr(F("DEBUG put [%s] <%d> bytes", fname, req.ContentLength))
 
-			if err := os.WriteFile(path.Join(DataDir, fname), bb, 0644); err != nil {
-				perr(F("ERROR write file [%s] %v", fname, err))
+			fnametemp := fname + ".temp"
+			if err := os.WriteFile(path.Join(DataDir, fnametemp), bb, 0644); err != nil {
+				perr(F("ERROR write file [%s] %v", fnametemp, err))
+				rw.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			if err := os.Rename(path.Join(DataDir, fnametemp), path.Join(DataDir, fname)); err != nil {
+				perr(F("ERROR rename ([%s] [%s]) %v", fnametemp, fname, err))
 				rw.WriteHeader(http.StatusInternalServerError)
 				return
 			}
