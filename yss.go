@@ -1,5 +1,5 @@
 /*
-Yaml Storage System
+yaml storage system
 */
 
 // GoGet GoFmt GoBuildNull
@@ -37,7 +37,7 @@ var (
 
 	NameRe *regexp.Regexp
 
-	TZIST = time.FixedZone("IST", 330*60)
+	F = fmt.Sprintf
 )
 
 func init() {
@@ -62,13 +62,13 @@ func main() {
 
 	go func() {
 		for {
-			perr("serving http requests on [%s]", ListenAddr)
+			perr(F("serving http requests on [%s]", ListenAddr))
 			err := http.ListenAndServe(ListenAddr, nil)
 			if err != nil {
-				perr("ERROR http listen %+v", err)
+				perr(F("ERROR http listen %+v", err))
 			}
 			retryinterval := 3 * time.Second
-			perr("retrying http listen in <%s>", retryinterval.Truncate(time.Second))
+			perr(F("retrying http listen in <%s>", retryinterval.Truncate(time.Second)))
 			time.Sleep(retryinterval)
 		}
 	}()
@@ -87,7 +87,7 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if !NameRe.MatchString(fname) {
-		perr("name [%s] does not match the allowed regexp", fname)
+		perr(F("name [%s] does not match the allowed regexp", fname))
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -96,28 +96,28 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 	case http.MethodGet:
 
 		if bb, err := ioutil.ReadFile(path.Join(DataDir, fname)); err != nil {
-			perr("ERROR read file [%s] %v", fname, err)
+			perr(F("ERROR read file [%s] %v", fname, err))
 			rw.WriteHeader(http.StatusNotFound)
 			return
 		} else {
-			perr("DEBUG get [%s]", fname)
+			perr(F("DEBUG get [%s]", fname))
 			//rw.Header().Set("Content-Type", "application/x-yaml")
 			rw.WriteHeader(http.StatusOK)
 			if _, err := rw.Write(bb); err != nil {
-				perr("ERROR write response %v", err)
+				perr(F("ERROR write response %v", err))
 			}
 		}
 
 	case http.MethodPut:
 
 		if req.ContentLength > ContentLengthLimit {
-			perr("WARNING request content length <%d> is more than allowed <%d>", req.ContentLength, ContentLengthLimit)
+			perr(F("WARNING request content length <%d> is more than allowed <%d>", req.ContentLength, ContentLengthLimit))
 			rw.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		if finfo, err := os.Stat(path.Join(DataDir, fname)); err != nil {
-			perr("ERROR stat file [%s] %v", fname, err)
+			perr(F("ERROR stat file [%s] %v", fname, err))
 			if os.IsNotExist(err) {
 				rw.WriteHeader(http.StatusNotFound)
 			} else {
@@ -125,20 +125,20 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 			}
 			return
 		} else if !finfo.Mode().IsRegular() {
-			perr("ERROR file [%s] is not a regular file", fname)
+			perr(F("ERROR file [%s] is not a regular file", fname))
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
 
 		if bb, err := ioutil.ReadAll(req.Body); err != nil {
-			perr("ERROR read request body %v", err)
+			perr(F("ERROR read request body %v", err))
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
 		} else {
 
-			perr("DEBUG put [%s] <%d> bytes", fname, req.ContentLength)
+			perr(F("DEBUG put [%s] <%d> bytes", fname, req.ContentLength))
 
 			if err := os.WriteFile(path.Join(DataDir, fname), bb, 0644); err != nil {
-				perr("ERROR write file [%s] %v", fname, err)
+				perr(F("ERROR write file [%s] %v", fname, err))
 				rw.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -156,19 +156,24 @@ func yss(rw http.ResponseWriter, req *http.Request) {
 	return
 }
 
-func perr(msg string, args ...interface{}) {
-	if strings.HasSuffix(msg, "DEBUG ") && !DEBUG {
+func fmttime(t time.Time) string {
+	ts := F(
+		"%d:%02d%02d:%02d%02d",
+		t.Year()%1000, t.Month(), t.Day(), t.Hour(), t.Minute(),
+	)
+	// https://pkg.go.dev/time#Time.Zone
+	if _, tzoffset := t.Zone(); tzoffset == 0 {
+		ts += "+"
+	} else {
+		ts += "-"
+	}
+	return ts
+}
+
+func perr(msgtext string) {
+	if strings.HasSuffix(msgtext, "DEBUG ") && !DEBUG {
 		return
 	}
-	tnow := time.Now().In(TZIST)
-	ts := fmt.Sprintf(
-		"<%d:%02d%02d:%02d%02dॐ>",
-		tnow.Year()%1000, tnow.Month(), tnow.Day(),
-		tnow.Hour(), tnow.Minute(),
-	)
-	msgtext := msg
-	if len(args) > 0 {
-		msgtext = fmt.Sprintf(msg, args...)
-	}
-	fmt.Fprint(os.Stderr, ts+SP+msgtext+NL)
+	tnow := time.Now()
+	fmt.Fprint(os.Stderr, "<"+fmttime(tnow)+">"+SP+msgtext+NL)
 }
