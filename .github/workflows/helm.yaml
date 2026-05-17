@@ -17,7 +17,7 @@ on:
 
 jobs:
   build-push:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-24.04-arm"
     steps:
 
       - uses: "shoce/action-version@v1"
@@ -34,15 +34,15 @@ jobs:
       - uses: "bsord/helm-push@v4"
         with:
           useOCIRegistry: true
-          registry-url:  "oci://ghcr.io/${{ github.repository }}"
-          username: "${{ github.repository_owner }}"
-          access-token: "${{ secrets.GITHUB_TOKEN }}"
+          registry-url:  "oci://ghcr.io/${{github.repository}}"
+          username: "${{github.repository_owner}}"
+          access-token: "${{secrets.GITHUB_TOKEN}}"
           force: true
           chart-folder: "helm"
 
       - uses: "actions/delete-package-versions@v5"
         with:
-          package-name: "${{ github.event.repository.name }}/${{ env.HELM_CHART_NAME }}"
+          package-name: "${{github.event.repository.name}}/${{env.HELM_CHART_NAME}}"
           package-type: "container"
           min-versions-to-keep: 2
           delete-only-untagged-versions: "false"

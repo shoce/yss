@@ -21,7 +21,7 @@ env:
 
 jobs:
   build-push:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-24.04-arm"
     steps:
 
       - uses: "shoce/action-version@v1"
@@ -32,22 +32,22 @@ jobs:
 
       - uses: "docker/login-action@v4"
         with:
-          registry: "${{ env.REGISTRY }}"
-          username: "${{ github.repository_owner }}"
-          password: "${{ secrets.GITHUB_TOKEN }}"
+          registry: "${{env.REGISTRY}}"
+          username: "${{github.repository_owner}}"
+          password: "${{secrets.GITHUB_TOKEN}}"
 
       - uses: "docker/metadata-action@v6"
         id: "meta"
         with:
-          images: "${{ env.REGISTRY }}/${{ github.repository }}"
+          images: "${{env.REGISTRY}}/${{github.repository}}"
 
       - uses: "docker/build-push-action@v7"
         with:
           context: .
           platforms: "linux/amd64,linux/arm64"
           push: ${{ github.event_name != 'pull_request' }}
-          tags: "${{ env.REGISTRY }}/${{ github.repository }}:${{ env.VERSION }}"
-          labels: "${{ steps.meta.outputs.labels }}"
+          tags: "${{env.REGISTRY}}/${{github.repository}}:${{env.VERSION}}"
+          labels: "${{steps.meta.outputs.labels}}"
           cache-from: "type=gha"
           cache-to: "type=gha,mode=max"
 
@@ -55,7 +55,7 @@ jobs:
 
       - uses: "actions/delete-package-versions@v5"
         with:
-          package-name: "${{ github.event.repository.name }}"
+          package-name: "${{github.event.repository.name}}"
           package-type: "container"
           min-versions-to-keep: 6
           delete-only-untagged-versions: "false"
