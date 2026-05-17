@@ -1,4 +1,3 @@
----
 
 apiVersion: "apps/v1"
 kind: "StatefulSet"
@@ -27,24 +26,39 @@ spec:
       volumes:
         - name: "data-dir"
           hostPath:
-            path: "{{ $.Values.DataDir }}"
+            path: "{{$.Values.DataDir}}"
             type: "DirectoryOrCreate"
+        - name: "zoneinfo"
+          hostPath:
+            path: "/usr/share/zoneinfo/"
+            type: "Directory"
+        - name: "localtime"
+          hostPath:
+            path: "/etc/localtime"
+            type: "File"
 
       containers:
 
         - name: "yss"
-          image: "{{ $.Values.ImageNameGithubYss }}:{{ $.Values.ImageTagGithubYss }}"
+          image: "{{$.Values.ImageNameGithubYss}}:{{$.Values.ImageTagGithubYss}}"
           imagePullPolicy: "IfNotPresent"
 
           volumeMounts:
             - name: "data-dir"
-              mountPath: "{{ $.Values.DataDir }}"
+              mountPath: "{{$.Values.DataDir}}"
+            - name: "zoneinfo"
+              mountPath: "/usr/share/zoneinfo/"
+              readOnly: true
+            - name: "localtime"
+              mountPath: "/etc/localtime"
+              readOnly: true
 
           ports:
-            - containerPort: {{ $.Values.ListenPort }}
+            - containerPort: {{$.Values.ListenPort}}
 
           envFrom:
             - configMapRef:
                 name: "yss"
+
 
 

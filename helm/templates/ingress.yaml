@@ -1,4 +1,3 @@
----
 
 {{ if $.Values.IngressHost -}}
 
@@ -9,7 +8,7 @@ metadata:
   name: "yss"
   annotations:
     kubernetes.io/ingress.allow-http: "false"
-    nginx.ingress.kubernetes.io/proxy-body-size: "{{ $.Values.IngressRequestMaxBodySizeString }}"
+    nginx.ingress.kubernetes.io/proxy-body-size: "{{$.Values.IngressRequestMaxBodySizeString}}"
     nginx.ingress.kubernetes.io/whitelist-source-range: "{{ $.Values.IngressWhitelistSourceRange | join ", " }}"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
@@ -20,11 +19,11 @@ spec:
 
   tls:
   - hosts:
-    - "{{ $.Values.IngressHost }}"
+    - "{{$.Values.IngressHost}}"
 
   rules:
 
-  - host: "{{ $.Values.IngressHost }}"
+  - host: "{{$.Values.IngressHost}}"
     http:
       paths:
       - path: "/"
@@ -33,7 +32,9 @@ spec:
           service:
             name: "yss"
             port:
-              number: {{ $.Values.ListenPort }}
+              number: {{$.Values.ListenPort}}
 
 {{ end }}
+
+
 
